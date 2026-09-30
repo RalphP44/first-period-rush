@@ -1,86 +1,127 @@
-# ✏️ Replace EVERYTHING in this file with your own game from OnlineGDB.
-#    (Click the pencil icon, select all, paste, then Commit changes.)
-
-"""
-Bodega Run - a state machine demo
-
-Mr. Cruz has $5 and a craving. Get him to the bodega.
-Watch the [STATE] line: every turn the program checks what state
-he's in FIRST, and that decides what can happen next.
-"""
 import random
 
+# Rebranded Route Obstacles and Characters
 ROUTE = [
-    {"type": "og", "name": "OG Papo", "where": "on his milk crate by the laundromat",
-     "says": "Back in '89 this block had a payphone that WORKED. Respect the payphone."},
-    {"type": "bandit", "name": "Sticky Fingers Stevie", "where": "lurking by the scaffolding",
-     "toll": 2},
-    {"type": "og", "name": "Ms. Gladys", "where": "watching the whole block from her window",
-     "says": "Mijo, fix your collar. And tell those kids to do their homework."},
-    {"type": "bandit", "name": "Two-Dollar Tony", "where": "posted up by the ATM that's always broken",
-     "toll": 3},  # inflation hit Tony too
+    {
+        "type": "vip",
+        "name": "Vice Principal Vance",
+        "where": "standing by the main gates checking watches",
+        "says": "Punctuality is the bedrock of academic excellence, Mr. Cruz.",
+    },
+    {
+        "type": "hazard",
+        "name": "Stairwell Traffic Jam",
+        "where": "blocking the central stairs",
+        "time_cost": 5,
+        "energy_cost": 2,
+    },
+    {
+        "type": "vip",
+        "name": "Dr. Aris Thorne (Research Fellow)",
+        "where": "peering out from the wet lab",
+        "says": "Ah, Cruz! Remember to review those lab reports today!",
+    },
+    {
+        "type": "hazard",
+        "name": "Freshly Mopped Hallway",
+        "where": "slippery tiles stretching outside the department wing",
+        "time_cost": 6,
+        "energy_cost": 3,
+    },
 ]
-
 
 def ask(prompt, options):
     while True:
         choice = input(prompt).strip().lower()
         if choice in options:
             return choice
-        print(f"  Pick one of: {', '.join(options)}")
+        print(f"Pick one of: {', '.join(options)}")
 
+# Game Variables
+state = "walking"  # walking | vip | hazard | class | broke
+energy = 5
+time_left = 12   # Minutes remaining until class starts
+respect = 0
+stop = 0
+who = None
 
-state = "walking"   # walking | og | bandit | bodega | broke
-money = 5
-respect = 0         # how many OGs you showed love to
-stop = 0            # how far along the route you are
-who = None          # who you're dealing with right now
+print("=== RACE TO CLASS ===")
+print("Class starts in 12 minutes! Mr. Cruz leaves the faculty lounge with 5 Energy.")
 
-print("Mr. Cruz leaves the house with $5. Destination: the bodega.")
-
-while state not in ("bodega", "broke"):
-    print(f"\n[STATE: {state.upper()} | ${money} | respect: {respect}]")
-
+while state not in ("class", "broke"):
+    print(f"\n[STATE: {state.upper()} | Time Left: {time_left} min | Energy: {energy} | Respect: {respect}]")
+    
     if state == "walking":
         if stop == len(ROUTE):
-            state = "bodega"
+            state = "class"
             continue
         who = ROUTE[stop]
         stop += 1
         print(f"You spot {who['name']} {who['where']}.")
-        state = who["type"]  # someone shows up -> switch state
-
-    elif state == "og":
-        if ask(f"(t)alk to {who['name']} or (n)od and keep it moving? ", ["t", "n"]) == "t":
+        state = who["type"]
+        
+    elif state == "vip":
+        print(f"{who['name']} is nearby.")
+        choice = ask("(t)alk briefly (+1 respect, loses 2 min) or (n)od and sprint past (saves time)? ", ["t", "n"])
+        
+        if choice == "t":
             print(f"{who['name']}: \"{who['says']}\"")
             respect += 1
-            print("  +1 respect. Word gets around.")
+            time_left -= 2
+            print("-> +1 Respect earned! (Cost 2 minutes)")
         else:
-            print(f"{who['name']} squints at you. Noted.")
+            print(f"You offer a polite nod to {who['name']} and keep moving.")
+            time_left -= 1
+        
         state = "walking"
-
-    elif state == "bandit":
-        if respect > 0:  # SAME bandit, different outcome -- because of state
-            print(f"{who['name']} sees the OGs nod at you. \"Oh my bad, Mr. Cruz. Have a blessed day.\"")
+        
+    elif state == "hazard":
+        print(f"Hazard Ahead: {who['name']}.")
+        
+        if respect > 0:
+            print(f"Your high respect ({respect}) lets you use a staff-only clearance keycard!")
+            time_left -= 1
+            respect -= 1
+            print("-> Passed smoothly around the hazard! (-1 min)")
         else:
-            print(f"{who['name']}: \"Ayo teach, lemme hold ${who['toll']}.\"")
-            if ask("(r)un or (p)ay the toll? ", ["r", "p"]) == "r":
-                if random.random() < 0.5:
-                    print("You hit him with the teacher speed-walk. Escaped!")
-                else:
-                    print(f"You trip over a MetroCard. He gets ${who['toll']} anyway.")
-                    money -= who["toll"]
+            choice = ask(f"(w)ait it out (loses {who['time_cost']} min) or (s)print through (costs {who['energy_cost']} energy, 60% chance to save time)? ", ["w", "s"])
+            
+            if choice == "w":
+                print(f"You tread carefully... losing {who['time_cost']} minutes.")
+                time_left -= who["time_cost"]
             else:
-                print(f"You hand over ${who['toll']}. At least he said thank you.")
-                money -= who["toll"]
-        state = "broke" if money <= 0 else "walking"
+                if random.random() < 0.6:
+                    print("Sprint successful! You burst through the delay in 1 minute!")
+                    time_left -= 1
+                    energy -= 1
+                else:
+                    print(f"You stumbled! Lost {who['energy_cost']} energy and {who['time_cost']} minutes pushing through.")
+                    energy -= who["energy_cost"]
+                    time_left -= who["time_cost"]
 
-print(f"\n[STATE: {state.upper()} | ${money}]")
+        # Check failure condition
+        if energy <= 0:
+            state = "broke"
+        else:
+            state = "walking"
+
+# --- ENDINGS ---
+print("\n" + "=" * 35)
+print(f"FINAL RESULT | Time Left: {time_left} min | Final Energy: {energy}")
+print("=" * 35)
+
 if state == "broke":
-    print("Mr. Cruz is broke before he reaches the door. The bodega cat stares in disappointment.")
-elif money == 5:
-    print("Full $5 intact. Chopped cheese AND an Arizona. Legendary run.")
-elif money >= 3:
-    print(f"Made it with ${money}. Chopped cheese secured. Minor losses.")
+    print("\n BAD ENDING: COLLAPSED IN THE HALLWAY")
+    print("You ran out of physical energy mid-commute. Students find Mr. Cruz fast asleep outside the classroom door as the bell rings.")
+
+elif time_left < 0:
+    print("\n BAD ENDING: TARDY & DISGRACED")
+    print(f"You arrived {abs(time_left)} minute(s) late. Vice Principal Vance is waiting outside the door tapping his watch.")
+
+elif time_left >= 5 and energy >= 4:
+    print("\n GOLDEN ENDING: LEGENDARY PROFESSOR")
+    print("You arrived early with time to set up slides and take a sip of coffee. Peak lecture performance delivered effortlessly!")
+
 else:
-    print(f"Made it with ${money}. One quarter water and your dignity. Barely.")
+    print("\n GOOD ENDING: MADE IT ON TIME")
+    print(f"You slid into the room with {time_left} minute(s) to spare! Out of breath, but ready to teach.")
