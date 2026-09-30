@@ -1,23 +1,23 @@
-# Bodega Run
+# First Period Rush
 
 <!-- ✏️ Replace everything in this file with YOUR game's info. Keep the headings. -->
 
-**Play it:** https://YOUR-USERNAME.github.io/YOUR-REPO-NAME/
+**Play it:** https://RalphP44.github.io/YOUR-REPO-NAME/
 
-**Made by:** Mr. Cruz
+**Made by:** Ralph Persaud
 
 ## The game
-Mr. Cruz has $5 and a craving. Get him to the bodega without getting robbed on the way.
+School is starting soon, try to get to class without being late.
 
 ## States
-- `walking` (start): heading down the block
-- `og`: talking to an OG
-- `bandit`: someone wants your money
-- `bodega` (end): made it
-- `broke` (end): out of money
+- `walking` (start): Your moving towards the class.
+- `vip`: You've ran into a staff member
+- `hazard`: an object is blocking the way
+- `Class` (end): made it to class
+- `broke` (end): Ran out of energy
 
 ## AI use
-None. <!-- If you used AI (ChatGPT, Claude, Gemini, Copilot…), say which one and what you used it for. -->
+Gemini has been used in order to re-evaluate drafted code. <!-- If you used AI (ChatGPT, Claude, Gemini, Copilot…), say which one and what you used it for. -->
 
 ---
 **What's in here:** `game.py` is the game. `index.html` is the web page that runs it. `mini-coi.js` is what lets `input()` work on GitHub Pages, so don't delete or rename it.
