@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Keep this line FIRST. It is what lets input() work on GitHub Pages. -->
+  <script src="mini-coi.js"></script>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- ✏️ EDIT 1: the name on the browser tab -->
+  <title>Bodega Run</title>
+
+  <!-- PyScript: runs real Python in the browser -->
+  <link rel="stylesheet" href="https://pyscript.net/releases/2026.7.3/core.css">
+  <script type="module" src="https://pyscript.net/releases/2026.7.3/core.js"></script>
+
+  <style>
+    /* ✏️ EDIT 2 (optional): your colors. The game box uses these too. */
+    :root {
+      --page: #101418;       /* page background */
+      --card: #181e24;       /* box behind the game */
+      --text: #eef2f5;       /* normal text */
+      --muted: #9aa7b2;      /* small text */
+      --accent: #ffc53d;     /* title, buttons, links */
+      --terminal: #0b0e11;   /* game background */
+      --terminal-text: #e8f0e8;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+    }
+    main { max-width: 860px; margin: 0 auto; padding: 32px 16px 48px; }
+    h1 { margin: 0; font-size: clamp(2rem, 6vw, 3rem); color: var(--accent); line-height: 1.1; }
+    h2 { font-size: 1.1rem; margin: 0 0 6px; }
+    .by { margin: 4px 0 12px; color: var(--muted); }
+    .pitch { font-size: 1.15rem; margin: 0 0 20px; }
+    .how { background: var(--card); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; }
+    .how ul { margin: 0; padding-left: 20px; }
+    #status { color: var(--muted); margin: 0 0 8px; min-height: 1.5em; }
+    #terminal {
+      height: 460px;
+      background: var(--terminal);
+      border-radius: 10px;
+      padding: 10px;
+      overflow: hidden;
+    }
+    .controls { display: flex; gap: 16px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+    button {
+      background: var(--accent); color: #111; border: 0; border-radius: 8px;
+      padding: 8px 16px; font: inherit; font-weight: 600; cursor: pointer;
+    }
+    a { color: var(--accent); }
+    footer { margin-top: 32px; color: var(--muted); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <!-- ✏️ EDIT 3: your game's title, your name, and one sentence that makes people want to play -->
+    <h1>Bodega Run</h1>
+    <p class="by">by Mr. Cruz</p>
+    <p class="pitch">Mr. Cruz has $5 and a craving. Get him to the bodega.</p>
+
+    <!-- ✏️ EDIT 4: how to play (2 or 3 tips) -->
+    <section class="how">
+      <h2>How to play</h2>
+      <ul>
+        <li>Type the letter in parentheses, like <b>t</b> or <b>n</b>, and press Enter.</li>
+        <li>Watch the [STATE] line. It tells you where you are.</li>
+      </ul>
+    </section>
+
+    <p id="status">Loading Python… the first time can take 10 to 20 seconds.</p>
+    <div id="terminal"></div>
+
+    <div class="controls">
+      <button id="restart" type="button">Play again</button>
+      <a id="code-link" href="#" hidden>See the Python code</a>
+    </div>
+
+    <footer>Real Python running in your browser with PyScript.</footer>
+  </main>
+
+  <!-- This loads game.py and runs it inside the black box above. Leave it alone. -->
+  <script id="game" type="py" terminal worker target="terminal">
+import builtins, linecache, traceback
+from urllib.parse import urljoin
+from pyscript import fetch, window
+
+# input() with no prompt breaks the browser terminal, so always pass one
+terminal_input = builtins.input
+builtins.input = lambda prompt="": terminal_input(str(prompt))
+
+url = urljoin(str(window.location.href), "game.py")
+response = await fetch(url, cache="no-store")   # no-store: always get the newest game.py
+if not response.ok:
+    print("\033[91mCan't find game.py. Your game file has to be named exactly game.py\033[0m")
+else:
+    code = await response.text()
+    linecache.cache["game.py"] = (len(code), None, code.splitlines(True), "game.py")
+    try:
+        exec(compile(code, "game.py", "exec"), {"__name__": "__main__"})
+    except SystemExit:
+        pass
+    except Exception as error:
+        report = traceback.TracebackException.from_exception(error)
+        report.stack = traceback.StackSummary.from_list(
+            [frame for frame in report.stack if frame.filename == "game.py"])
+        print("\033[91m" + "".join(report.format()).rstrip() + "\033[0m")
+        print("\nYour game crashed. Read the last red line, then fix that line in game.py.")
+  </script>
+
+  <!-- Page helpers: loading message, Play again, code link. Leave these alone too. -->
+  <script>
+    const statusLine = document.getElementById("status");
+    const gameScript = document.getElementById("game");
+
+    document.getElementById("restart").onclick = () => location.reload();
+
+    // On GitHub Pages, link straight to this repo's game.py
+    if (location.hostname.endsWith(".github.io")) {
+      const user = location.hostname.split(".")[0];
+      const repo = location.pathname.split("/")[1] || location.hostname;
+      const link = document.getElementById("code-link");
+      link.href = `https://github.com/${user}/${repo}/blob/main/game.py`;
+      link.hidden = false;
+    }
+
+    if (location.protocol === "file:") {
+      statusLine.textContent = "Open this page from your GitHub Pages link. It can't run as a file on your computer.";
+    }
+
+    // When the game box appears, color it to match the page and update the status line
+    const css = getComputedStyle(document.documentElement);
+    let started = false;
+    (function waitForTerminal() {
+      const term = gameScript.terminal;
+      if (!term) return requestAnimationFrame(waitForTerminal);
+      term.options.theme = {
+        background: css.getPropertyValue("--terminal").trim(),
+        foreground: css.getPropertyValue("--terminal-text").trim(),
+        cursor: css.getPropertyValue("--accent").trim(),
+      };
+      term.onWriteParsed(() => {
+        if (started) return;
+        started = true;
+        statusLine.textContent = "Click the black box, type your choice, and press Enter.";
+        term.focus();
+      });
+    })();
+
+    setTimeout(() => {
+      if (!started && location.protocol !== "file:") {
+        statusLine.textContent = "Still loading… try refreshing the page. If it stays stuck, check that the school Wi-Fi isn't blocking pyscript.net.";
+      }
+    }, 30000);
+  </script>
+</body>
+</html>
