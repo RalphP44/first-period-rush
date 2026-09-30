@@ -6,7 +6,7 @@ ROUTE = [
         "type": "vip",
         "name": "Vice Principal Vance",
         "where": "standing by the main gates checking watches",
-        "says": "Punctuality is the bedrock of academic excellence, Mr. Cruz.",
+        "says": "Punctuality is the bedrock of academic excellence.",
     },
     {
         "type": "hazard",
@@ -19,7 +19,7 @@ ROUTE = [
         "type": "vip",
         "name": "Dr. Aris Thorne (Research Fellow)",
         "where": "peering out from the wet lab",
-        "says": "Ah, Cruz! Remember to review those lab reports today!",
+        "says": "Ah, glad to see you! Remember to review those lab reports today!",
     },
     {
         "type": "hazard",
@@ -46,7 +46,7 @@ stop = 0
 who = None
 
 print("=== RACE TO CLASS ===")
-print("Class starts in 12 minutes! Mr. Cruz leaves the faculty lounge with 5 Energy.")
+print("Class starts in 12 minutes! You step out of the lounge with 5 Energy.")
 
 while state not in ("class", "broke"):
     print(f"\n[STATE: {state.upper()} | Time Left: {time_left} min | Energy: {energy} | Respect: {respect}]")
@@ -112,16 +112,16 @@ print("=" * 35)
 
 if state == "broke":
     print("\n BAD ENDING: COLLAPSED IN THE HALLWAY")
-    print("You ran out of physical energy mid-commute. Students find Mr. Cruz fast asleep outside the classroom door as the bell rings.")
+    print("You ran out of physical energy mid-commute. Everyone finds you fast asleep outside the classroom door as the bell rings.")
 
 elif time_left < 0:
     print("\n BAD ENDING: TARDY & DISGRACED")
     print(f"You arrived {abs(time_left)} minute(s) late. Vice Principal Vance is waiting outside the door tapping his watch.")
 
 elif time_left >= 5 and energy >= 4:
-    print("\n GOLDEN ENDING: LEGENDARY PROFESSOR")
-    print("You arrived early with time to set up slides and take a sip of coffee. Peak lecture performance delivered effortlessly!")
+    print("\n GOLDEN ENDING: LEGENDARY RUN")
+    print("You arrived early with time to spare and grab a coffee. Peak performance delivered effortlessly!")
 
 else:
     print("\n GOOD ENDING: MADE IT ON TIME")
-    print(f"You slid into the room with {time_left} minute(s) to spare! Out of breath, but ready to teach.")
+    print(f"You slid into the room with {time_left} minute(s) to spare! Out of breath, but ready to go.")
