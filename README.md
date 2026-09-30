@@ -2,7 +2,7 @@
 
 <!-- ✏️ Replace everything in this file with YOUR game's info. Keep the headings. -->
 
-**Play it:** https://RalphP44.github.io/YOUR-REPO-NAME/
+**Play it:** https://RalphP44.github.io/first-period-rush/
 
 **Made by:** Ralph Persaud
 
